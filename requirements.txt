@@ -1,0 +1,4 @@
+byteplus-python-sdk-v2>=3.0.60
+python-dotenv==1.2.1
+imageio-ffmpeg==0.6.0
+pypdf==6.13.2

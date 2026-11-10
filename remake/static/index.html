@@ -1,0 +1,402 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Remake Studio</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%234F46E5'/%3E%3Cstop offset='.55' stop-color='%237C6FE3'/%3E%3Cstop offset='1' stop-color='%23EC4899'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='32' height='32' rx='8' fill='url(%23g)'/%3E%3Cpath d='M9 11a7 7 0 0 1 12-2l2-2v6h-6l2-2a4 4 0 0 0-7 1z M23 21a7 7 0 0 1-12 2l-2 2v-6h6l-2 2a4 4 0 0 0 7-1z' fill='white'/%3E%3C/svg%3E">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* Design tokens */
+:root{
+  --bg:#F4F4F6;--surface:#fff;--surface-2:#F4F4F6;--border:#E5E7EB;--border-2:#D1D5DB;
+  --accent:#2563EB;--accent-2:#7C6FE3;--accent-3:#F472B6;
+  --text-primary:#1E1E2E;--text-secondary:#6B7280;
+  --success:#16A34A;--success-bg:rgba(34,197,94,.10);--success-border:rgba(34,197,94,.25);
+  --danger:#E11D48;--danger-bg:rgba(225,29,72,.08);--danger-border:rgba(225,29,72,.18);
+  --warn:#B45309;--warn-bg:rgba(245,158,11,.10);--warn-border:rgba(245,158,11,.28);
+  --radius:10px;--radius-sm:6px;--sidebar-w:248px;
+  --font:'Inter',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);padding:20px;font-family:var(--font);font-size:13px;line-height:1.5;color:var(--text-primary);margin:0}
+.app{max-width:1240px;margin:0 auto 0 calc(var(--sidebar-w) + 8px)}
+.sidebar{position:fixed;top:0;left:0;bottom:0;width:var(--sidebar-w);overflow-y:auto;background:var(--surface);border-right:.5px solid var(--border);padding:16px 12px 24px;z-index:20}
+.sidebar-brand{display:flex;align-items:center;gap:10px;padding:2px 8px 14px;font-size:14px;font-weight:600}
+.sidebar-group{font-size:10.5px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--text-secondary);margin:14px 10px 6px}
+.sidebar-nav{display:flex;flex-direction:column;gap:2px}
+.sidebar-btn{display:flex;align-items:center;gap:10px;width:100%;text-align:left;border:.5px solid transparent;border-radius:8px;background:transparent;color:var(--text-secondary);padding:8px 10px;font:500 13px var(--font);cursor:pointer}
+.sidebar-btn svg{width:16px;height:16px;flex:none}
+.sidebar-btn:hover{background:rgba(124,111,227,.05);color:var(--text-primary)}
+.sidebar-btn.active{background:rgba(124,111,227,.10);border-color:rgba(124,111,227,.28);color:var(--accent-2)}
+.sidebar-btn small{display:block;font-size:11px;font-weight:400;color:var(--text-secondary)}
+.sidebar-btn .txt{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.title-row{display:flex;align-items:center;gap:8px;margin:6px 0 4px}.title-row .tool-heading{margin:0}
+.rename-input{max-width:420px;font-size:16px}
+.icon-btn{width:28px;height:28px;display:inline-flex;align-items:center;justify-content:center;border:none;background:none;border-radius:var(--radius-sm);color:var(--text-secondary);cursor:pointer}.icon-btn:hover{background:var(--surface-2);color:var(--text-primary)}
+.tool-heading{margin:6px 0 4px;font-size:22px;font-weight:600;letter-spacing:-.01em;line-height:1.25}
+.app-subtitle{font-size:13px;color:var(--text-secondary);margin:0 0 16px}
+.card{background:var(--surface);border:.5px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:14px}
+.card-label,.field-label,.section-heading{font-size:11px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--text-secondary)}
+.card-label{margin:0 0 12px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.card-label .title{color:var(--text-primary);font-size:12px;font-weight:600}
+.field-label{display:block;margin:12px 0 5px}
+.field-hint{font-size:11px;color:var(--text-secondary);margin-top:4px}
+.input,.select-input,textarea.input{width:100%;border:.5px solid var(--border-2);border-radius:var(--radius-sm);padding:9px 11px;font:13px var(--font);color:var(--text-primary);background:var(--surface);outline:none}
+textarea.input{resize:vertical;min-height:96px}
+textarea.mono{font:12px/1.45 var(--mono)}
+.input:focus,.select-input:focus{border-color:var(--accent-2);box-shadow:0 0 0 3px rgba(124,111,227,.10)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:0 14px}
+.upload-zone{border:1.5px dashed var(--border-2);border-radius:10px;background:#FAFAFB;color:var(--text-secondary);padding:20px 16px;text-align:center;cursor:pointer;transition:border-color .15s,background .15s,color .15s;display:block}
+.upload-zone:hover{border-color:var(--accent-2);background:rgba(124,111,227,.04);color:var(--accent-2)}
+.upload-zone svg{width:22px;height:22px;color:var(--accent-2);margin-bottom:6px}
+.upload-text{font-size:13px;font-weight:500;margin:0 0 3px}.upload-sub{font-size:11px;margin:0}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.tab-btn{padding:5px 12px;border-radius:20px;border:.5px solid var(--border-2);background:transparent;color:var(--text-secondary);font:500 12px var(--font);cursor:pointer}
+.tab-btn:hover{color:var(--text-primary)}.tab-btn.active{background:rgba(124,111,227,.10);border-color:var(--accent-2);color:var(--accent-2)}
+.btn-row{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;align-items:center}
+.btn-primary{flex:1;height:40px;padding:0 16px;border-radius:var(--radius-sm);border:none;background:linear-gradient(90deg,var(--accent),var(--accent-2),var(--accent-3));color:#fff;font:500 13px var(--font);cursor:pointer;transition:opacity .15s}
+.btn-primary:hover{opacity:.92}.btn-primary:disabled{opacity:.4;cursor:not-allowed}
+.btn-ghost{height:34px;padding:0 14px;border-radius:var(--radius-sm);border:.5px solid var(--border-2);background:var(--surface-2);color:var(--text-primary);font:400 12.5px var(--font);cursor:pointer;white-space:nowrap}
+.btn-ghost:hover{border-color:var(--accent-2)}.btn-ghost:disabled{opacity:.45;cursor:not-allowed}
+.badge{display:inline-flex;align-items:center;gap:6px;border-radius:20px;padding:2px 9px;font-size:11px;font-weight:500;letter-spacing:0;text-transform:none;border:.5px solid var(--border-2);color:var(--text-secondary);background:var(--surface-2)}
+.badge .dot{width:5px;height:5px;border-radius:50%;background:currentColor}
+.badge.done{color:var(--success);background:var(--success-bg);border-color:var(--success-border)}
+.badge.error{color:var(--danger);background:var(--danger-bg);border-color:var(--danger-border)}
+.badge.running,.badge.rendering,.badge.queued{color:var(--accent-2);background:rgba(124,111,227,.10);border-color:rgba(124,111,227,.28)}
+.badge.running .dot,.badge.rendering .dot,.badge.queued .dot{animation:blink 1.2s infinite}@keyframes blink{50%{opacity:.2}}
+.badge.prompted,.badge.stale,.badge.outdated{color:var(--warn);background:var(--warn-bg);border-color:var(--warn-border)}
+.progress{font-size:12px;color:var(--text-secondary);text-transform:none;letter-spacing:0;font-weight:400}
+.error-box{border:.5px solid var(--danger-border);background:var(--danger-bg);color:var(--danger);border-radius:var(--radius-sm);padding:10px 12px;font-size:12px;margin-top:12px;white-space:pre-wrap}
+.muted{color:var(--text-secondary)}
+.stats{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.stat{background:var(--surface-2);border:.5px solid var(--border);border-radius:var(--radius-sm);padding:6px 10px;font-size:12px}
+.stat b{font-weight:600}
+.results-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;margin-top:12px}
+.result-card{background:var(--surface);border:.5px solid var(--border);border-radius:var(--radius-sm);overflow:hidden}
+.result-card img{width:100%;height:160px;object-fit:contain;display:block;background:var(--bg);border-bottom:.5px solid var(--border)}
+.result-card .meta{padding:8px 12px;font-size:12px}
+.result-card .empty{height:160px;display:flex;align-items:center;justify-content:center;background:var(--bg);color:var(--danger);font-size:11px;padding:10px;text-align:center}
+table{width:100%;border-collapse:collapse;font-size:12px;margin-top:10px}
+th{font-size:10.5px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--text-secondary);text-align:left}
+td,th{border-bottom:.5px solid var(--border);padding:7px 6px;vertical-align:top}
+.notes{margin:8px 0 0;padding-left:18px;color:var(--text-secondary)}
+.clip{border:.5px solid var(--border);border-radius:var(--radius-sm);padding:12px;margin-top:10px;background:#FAFAFB}
+.clip-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.refs{display:flex;gap:6px;margin:8px 0;flex-wrap:wrap}
+.ref{position:relative}.ref img{height:58px;border-radius:4px;border:.5px solid var(--border);display:block;background:var(--bg)}
+.ref span{position:absolute;left:3px;bottom:3px;background:rgba(30,30,46,.75);color:#fff;font-size:10px;border-radius:3px;padding:0 4px}
+.video-player{width:100%;max-width:560px;border-radius:var(--radius-sm);border:.5px solid var(--border);display:block;background:#000}
+details summary{cursor:pointer;color:var(--text-secondary);margin-top:10px;font-size:12px}
+.hidden{display:none}
+@media (max-width:900px){body{padding:16px}.sidebar{position:static;width:auto;border-right:0;border-bottom:.5px solid var(--border);margin:-16px -16px 16px}.app{margin:0}.grid4{grid-template-columns:1fr 1fr}}
+@media (max-width:560px){.grid2,.grid4{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<aside class="sidebar" aria-label="Remake Studio">
+  <div class="sidebar-brand">
+    <svg viewBox="0 0 32 32" width="28" height="28" aria-hidden="true"><defs><linearGradient id="rsG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4F46E5"/><stop offset=".55" stop-color="#7C6FE3"/><stop offset="1" stop-color="#EC4899"/></linearGradient></defs><rect width="32" height="32" rx="8" fill="url(#rsG)"/><path d="M9 11a7 7 0 0 1 12-2l2-2v6h-6l2-2a4 4 0 0 0-7 1z M23 21a7 7 0 0 1-12 2l-2 2v-6h6l-2 2a4 4 0 0 0 7-1z" fill="#fff"/></svg>
+    Remake Studio
+  </div>
+  <div class="sidebar-group">Workflow</div>
+  <div class="sidebar-nav"><button class="sidebar-btn" id="nav-new" onclick="showNew()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>New remake</button></div>
+  <div class="sidebar-group">Projects</div>
+  <div class="sidebar-nav" id="plist"></div>
+</aside>
+<div class="app" id="view"></div>
+
+<script>
+const $ = (s, el=document) => el.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const ICON_EDIT = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>';
+const ICON_FILM = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M10 9.5v5l4-2.5z"/></svg>';
+let current = null, timer = null, CATALOG = null, lastSig = '';
+
+async function api(path, opts={}) {
+  const r = await fetch(path, opts);
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(j.error || r.statusText);
+  return j;
+}
+const post = (path, body) => api(path, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)});
+const putJson = (name, data) => api(`/api/projects/${current}/file/${name}`, {method:'PUT', body: typeof data === 'string' ? data : JSON.stringify(data)});
+
+async function loadList() {
+  const list = await api('/api/projects');
+  $('#nav-new').classList.toggle('active', !current);
+  $('#plist').innerHTML = list.map(m => `<button class="sidebar-btn ${current===m.id?'active':''}" onclick="openProject('${m.id}')">${ICON_FILM}
+    <span class="txt">${esc(m.title)}<small>${esc(m.target.language)} · ${esc(m.target.region||'')}</small></span></button>`).join('')
+    || '<div class="muted" style="padding:6px 10px">No projects yet.</div>';
+}
+
+/* ---------- model pickers ---------- */
+function opts(list, sel, def) {
+  return list.map(m => `<option value="${esc(m.id)}" ${m.id===sel?'selected':''}>${esc(m.label)}${m.note?' — '+esc(m.note):''}${m.id===def?' (default)':''}</option>`).join('');
+}
+function videoSpec(id) { return CATALOG.video.find(v => v.id === id) || CATALOG.video[0]; }
+function modelFields(s, prefix) {
+  const d = CATALOG.defaults, v = videoSpec(s.video_model);
+  const res = v.resolutions.includes(s.resolution) ? s.resolution : v.resolutions.includes('720p') ? '720p' : v.resolutions[0];
+  return `<div class="grid4">
+    <div><label class="field-label">Video understanding</label><select class="select-input" id="${prefix}understanding_model">${opts(CATALOG.understanding, s.understanding_model, d.understanding_model)}</select>
+      <div class="field-hint">Mini / Lite also hear the dialogue.</div></div>
+    <div><label class="field-label">LLM (localize, prompts)</label><select class="select-input" id="${prefix}llm_model">${opts(CATALOG.llm, s.llm_model || d.llm_model, d.llm_model)}</select></div>
+    <div><label class="field-label">Image model (sheets)</label><select class="select-input" id="${prefix}image_model">${opts(CATALOG.image, s.image_model || d.image_model, d.image_model)}</select></div>
+    <div><label class="field-label">Video model</label><select class="select-input" id="${prefix}video_model" onchange="onVideoModel('${prefix}')">${opts(CATALOG.video.map(x=>({...x,note:'up to '+x.max_duration+'s'})), s.video_model, d.video_model)}</select></div>
+  </div>
+  <div class="grid4">
+    <div><label class="field-label">Resolution</label><select class="select-input" id="${prefix}resolution">${v.resolutions.map(r=>`<option ${r===res?'selected':''}>${r}</option>`).join('')}</select></div>
+    <div><label class="field-label">Aspect ratio</label><select class="select-input" id="${prefix}ratio">${['16:9','9:16','1:1','4:3','3:4','21:9'].map(r=>`<option ${r===s.ratio?'selected':''}>${r}</option>`).join('')}</select></div>
+    <div><label class="field-label">Clip packing</label><select class="select-input" id="${prefix}clip_mode">
+      <option value="pack" ${s.clip_mode!=='scene'?'selected':''}>Fill each generation to the max</option>
+      <option value="scene" ${s.clip_mode==='scene'?'selected':''}>Also split at scene changes</option></select></div>
+    <div><label class="field-label">Max seconds per generation</label><input class="input" type="number" min="4" id="${prefix}max_clip_seconds" value="${s.max_clip_seconds||''}" placeholder="${v.max_duration} (model max)">
+      <div class="field-hint" id="${prefix}maxhint">Blank = ${v.max_duration}s, the model's limit.</div></div>
+  </div>`;
+}
+function onVideoModel(prefix) {
+  const v = videoSpec($('#'+prefix+'video_model').value), r = $('#'+prefix+'resolution'), cur = r.value;
+  r.innerHTML = v.resolutions.map(x=>`<option ${x===cur?'selected':''}>${x}</option>`).join('');
+  $('#'+prefix+'max_clip_seconds').placeholder = v.max_duration + ' (model max)';
+  $('#'+prefix+'maxhint').textContent = `Blank = ${v.max_duration}s, the model's limit.`;
+}
+function readModelFields(prefix) {
+  const g = k => $('#'+prefix+k).value;
+  return {understanding_model:g('understanding_model'), llm_model:g('llm_model'), image_model:g('image_model'),
+          video_model:g('video_model'), resolution:g('resolution'), ratio:g('ratio'), clip_mode:g('clip_mode'),
+          max_clip_seconds: Math.min(+g('max_clip_seconds')||0, videoSpec(g('video_model')).max_duration) || 0};
+}
+
+/* ---------- new project ---------- */
+const PRESETS = [['Spanish','Mexico'],['Spanish','Spain'],['Spanish','Argentina'],['Spanish','Colombia'],['Portuguese','Brazil'],['Hindi','India'],['French','France'],['Arabic','Saudi Arabia']];
+function showNew() {
+  current = null; clearInterval(timer); loadList();
+  const s = {...CATALOG.defaults, ratio:'16:9', resolution:'720p', clip_mode:'pack', max_clip_seconds:0, understanding_model:'seed-2-0-lite-260428'};
+  $('#view').innerHTML = `<h1 class="tool-heading">New remake</h1>
+  <p class="app-subtitle">Upload a video or paste a script, pick the target language and region, choose the models — Nothing runs on its own: each step (understand, localize, write prompts, sheets, video, assemble) starts only when you click it.</p>
+  <div class="card"><div class="card-label">Source</div>
+    <label class="upload-zone" for="n_video">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M7 9l5-5 5 5M4 20h16"/></svg>
+      <p class="upload-text" id="n_vname">Upload source video</p><p class="upload-sub">MP4 / MOV, up to 512 MB</p></label>
+    <input type="file" id="n_video" accept="video/*" class="hidden" onchange="$('#n_vname').textContent=this.files[0]?.name||'Upload source video'">
+    <label class="field-label">…and/or script</label>
+    <textarea class="input" id="n_script" rows="5" placeholder="Paste a script (any language). With a video too, it is used to get the dialogue exactly right."></textarea>
+    <label class="field-label">Title</label><input class="input" id="n_title" placeholder="e.g. Coffee shop short — LATAM">
+  </div>
+  <div class="card"><div class="card-label">Target</div>
+    <div class="grid2"><div><label class="field-label" style="margin-top:0">Language</label><input class="input" id="n_lang" value="Spanish"></div>
+      <div><label class="field-label" style="margin-top:0">Region / market</label><input class="input" id="n_region" value="Mexico"></div></div>
+    <div class="tabs" id="n_presets">${PRESETS.map(([l,r],i)=>`<button class="tab-btn ${i===0?'active':''}" onclick="pickPreset(this,'${l}','${r}')">${l} · ${r}</button>`).join('')}</div>
+    <label class="field-label">Director notes (optional)</label>
+    <textarea class="input" id="n_notes" rows="3" placeholder="e.g. Set it in Mexico City, warm telenovela lighting, keep the ending ambiguous."></textarea>
+  </div>
+  <div class="card"><div class="card-label">Models & output</div>${modelFields(s, 'n_')}</div>
+  <div class="btn-row"><button class="btn-primary" id="n_go" onclick="createProject()">Create project</button></div>
+  <div id="n_msg" class="muted" style="margin-top:8px"></div>`;
+}
+function pickPreset(btn, l, r) {
+  $('#n_lang').value = l; $('#n_region').value = r;
+  document.querySelectorAll('#n_presets .tab-btn').forEach(b => b.classList.toggle('active', b === btn));
+}
+async function createProject() {
+  const btn = $('#n_go'), msg = $('#n_msg'); btn.disabled = true;
+  try {
+    let video_path = '';
+    const f = $('#n_video').files[0];
+    if (f) { msg.textContent = 'Uploading video…'; video_path = (await api('/api/upload?name='+encodeURIComponent(f.name), {method:'POST', body:f})).path; }
+    msg.textContent = 'Creating…';
+    const {id} = await post('/api/projects', {title: $('#n_title').value, language: $('#n_lang').value, region: $('#n_region').value,
+      notes: $('#n_notes').value, script_text: $('#n_script').value, video_path, settings: readModelFields('n_')});
+    openProject(id);
+  } catch (e) { msg.innerHTML = `<div class="error-box">${esc(e.message)}</div>`; btn.disabled = false; }
+}
+
+/* ---------- project view ---------- */
+async function openProject(id) {
+  current = id; lastSig = ''; clearInterval(timer); await loadList(); await refresh();
+  timer = setInterval(() => { const a = document.activeElement; if (!a || !/TEXTAREA|INPUT|SELECT/.test(a.tagName)) refresh(); }, 4000);
+}
+async function refresh() {
+  if (!current) return;
+  const d = await api('/api/projects/' + current);
+  const sig = JSON.stringify(d);
+  if (sig === lastSig) return; lastSig = sig;
+  const open = [...document.querySelectorAll('details[open]')].map(x => x.dataset.k);
+  render(d);
+  open.forEach(k => { const el = document.querySelector(`details[data-k="${k}"]`); if (el) el.open = true; });
+}
+const run = (body) => post(`/api/projects/${current}/run`, body).then(() => { lastSig=''; refresh(); }).catch(e => alert(e.message));
+const badge = st => `<span class="badge ${st}"><span class="dot"></span>${esc(st)}</span>`;
+const label = id => [...CATALOG.llm, ...CATALOG.image, ...CATALOG.video, ...CATALOG.understanding].find(m => m.id === id)?.label || id;
+
+const STAGE_BTN = {understand:'Run understanding', localize:'Run localization', prompts:'Write all prompts',
+  sheets:'Generate all sheets', assemble:'Assemble clips'};
+function stageCard(d, st, body) {
+  const s = d.meta.stages[st.key], dis = d.meta.running ? 'disabled' : '';
+  const btn = STAGE_BTN[st.key] ? `<div class="btn-row" style="margin-top:0"><button class="btn-ghost" ${dis} onclick="runStage('${st.key}')">${STAGE_BTN[st.key]}</button>
+      <span class="muted">${STAGE_HINT[st.key]||''}</span></div>` : '';
+  return `<div class="card"><div class="card-label"><span class="title">${esc(st.label)}</span>${badge(s.status)}<span class="progress">${esc(s.progress||'')}</span></div>
+    ${btn}
+    ${s.error ? `<div class="error-box">${esc(s.error)}</div>` : ''}
+    ${body || ''}
+    ${st.file && d.files[st.file] ? `<details data-k="json_${st.key}"><summary>Edit ${st.file}</summary>
+      <textarea class="input mono" id="ed_${st.key}" rows="18">${esc(JSON.stringify(d.files[st.file], null, 2))}</textarea>
+      <div class="btn-row"><button class="btn-ghost" onclick="saveFile('${st.file}','ed_${st.key}')">Save JSON</button></div></details>` : ''}
+  </div>`;
+}
+const STAGE_HINT = {
+  prompts: 'One LLM call writes every character sheet, location sheet and video prompt. Rewrites any prompt you edited.',
+  sheets: 'Generates the cards with no image yet or whose prompt changed. Or use the button on a single card.',
+  assemble: 'Joins every clip into final.mp4 once all clips are generated.'};
+function runStage(key) {
+  if (key === 'prompts' && window._data.files['04_shots.json']?.clips?.some(c => c.prompt)
+      && !confirm('Write all prompts again? Prompts you edited are replaced, and generated sheets and clips become outdated if their prompt changes.')) return;
+  if (key === 'sheets') {
+    const S = window._data.files['03_sheets.json'] || {};
+    const todo = ['characters','locations'].flatMap(k => Object.values(S[k]||{})).filter(e => !e.image || ['outdated','error'].includes(e.status));
+    if (!todo.length) return alert('Every sheet is generated and up to date. Use "Generate again" on a card to redo one.');
+    if (!confirm(`Generate ${todo.length} sheet(s): ${todo.map(e=>e.id).join(', ')}?`)) return;
+  }
+  run({start:key});
+}
+
+function render(d) {
+  const f = d.files, m = d.meta, P = p => `/p/${current}/${p}`, s = m.settings;
+  const u = f['01_understanding.json'], L = f['02_localized.json'], S = f['03_sheets.json'], C = f['04_shots.json'], F = f['05_final.json'];
+  const total = C ? C.clips.reduce((n,c)=>n+c.duration,0) : 0;
+  const bodies = {
+    understand: u ? `<div><b>${esc(u.title)}</b> — ${esc(u.logline)}</div><div class="stats">
+      <span class="stat">Language <b>${esc(u.source_language)}</b></span><span class="stat"><b>${u.shots.length}</b> shots</span>
+      <span class="stat"><b>${u.characters.length}</b> characters</span><span class="stat"><b>${u.locations.length}</b> locations</span><span class="stat"><b>${esc(u.duration_seconds)}</b>s</span></div>` : '',
+    localize: L ? `<div><b>${esc(L.title)}</b> <span class="muted">${esc(L.language)} · ${esc(L.region)}</span></div>
+      <ul class="notes">${(L.localization_notes||[]).map(n=>`<li>${esc(n)}</li>`).join('')}</ul>
+      <table><tr><th>Character</th><th>Source</th><th>Voice</th></tr>${(L.characters||[]).map(c=>`<tr><td><b>${esc(c.name)}</b> <span class="muted">${esc(c.id)}</span><br>${esc(c.sheet_description)}</td><td>${esc(c.source_name)}</td><td>${esc(c.voice)}</td></tr>`).join('')}</table>
+      <details data-k="dialogue"><summary>Dialogue (${L.shots.reduce((n,x)=>n+(x.dialogue||[]).length,0)} lines)</summary><table><tr><th>Shot</th><th>Original</th><th>${esc(L.language)}</th></tr>
+      ${L.shots.flatMap(x=>(x.dialogue||[]).map(dl=>`<tr><td>${esc(x.id)}</td><td>${esc(dl.source_line)}</td><td>${esc(dl.line)}</td></tr>`)).join('')}</table></details>` : '',
+    prompts: C && S ? `<div class="stats"><span class="stat"><b>${Object.keys(S.characters||{}).length}</b> character prompts</span>
+        <span class="stat"><b>${Object.keys(S.locations||{}).length}</b> location prompts</span><span class="stat"><b>${C.clips.length}</b> video prompts</span>
+        ${(m.stages.prompts.result?.fallbacks||[]).length ? `<span class="stat">used the plain description for <b>${esc(m.stages.prompts.result.fallbacks.join(', '))}</b></span>`:''}</div>
+      <div class="muted">Read and edit each prompt on its card below (sheets in step 4, clips in step 5).</div>` : '',
+    sheets: L ? sheetGroup('Characters', 'character sheet', L.characters, (S||{}).characters, m, 'characters')
+              + sheetGroup('Locations', 'location sheet', L.locations, (S||{}).locations, m, 'locations') : '',
+    shots: C ? `<div class="stats"><span class="stat"><b>${C.clips.length}</b> generation${C.clips.length===1?'':'s'}</span><span class="stat"><b>${total}</b>s total</span>
+        <span class="stat">${esc(label(s.video_model))} · ${esc(s.resolution)} · ${esc(s.ratio)}</span>
+        ${C.grouping ? `<span class="stat">≤ <b>${C.grouping.max}</b>s each · ${C.grouping.mode==='scene'?'split at scenes':'packed'}</span>`:''}</div>
+      <div class="btn-row"><button class="btn-primary" style="flex:0 0 auto;min-width:220px" ${m.running||!C.clips.some(c=>c.prompt)||!C.clips.some(needsRender)?'disabled':''} onclick="generateVideo()">${!C.clips.some(needsRender)?'All clips generated':C.clips.some(c=>c.video)?`Generate ${C.clips.filter(needsRender).length} remaining clip(s)`:'Generate video'}</button>
+        <span class="muted">Nothing is sent to ${esc(label(s.video_model))} until you click this or a clip's own button. Finished clips are kept. Every prompt ends with a strict no-text-overlay rule.</span></div>`
+      + C.clips.map((c,i)=>`<div class="clip"><div class="clip-head"><b>${esc(c.id)}</b>${badge(c.status)}
+        <span class="muted" title="Source shots in this clip: ${esc(c.shot_ids.join(', '))}">${c.shot_ids.length} source shot${c.shot_ids.length===1?'':'s'} (${tc(c.source_start)}–${tc(c.source_end)} of the source) · <b>${c.duration}s</b>${(c.scene_ids||[]).length>1?' · '+c.scene_ids.length+' scenes':''}</span></div>
+      <div class="refs">${(c.references||[]).map(r=>`<div class="ref" title="${esc(r.tag+' — '+r.name)}"><img src="${P(r.image)}"><span>${esc(r.tag.replace('@',''))}</span></div>`).join('')}</div>
+      ${missingRefs(c).length?`<div class="muted" style="margin:6px 0">Generate these sheets first: ${esc(missingRefs(c).join(', '))}</div>`:''}
+      ${c.error?`<div class="error-box">${esc(c.error)}</div>`:''}
+      ${c.status==='outdated'?`<div class="muted" style="margin:6px 0">The prompt or sheets changed after this video was made. Generate it again to update it.</div>`:''}
+      ${c.status==='rendering'?`<div class="muted" style="margin:6px 0">Rendering on ${esc(label(s.video_model))} · task ${esc(c.task_id)}</div>`:''}
+      ${c.video?`<video class="video-player" controls preload="metadata" src="${P(c.video)}"></video>`:''}
+      ${c.prompt?`<div class="btn-row"><button class="btn-ghost" ${m.running||['queued','rendering'].includes(c.status)||missingRefs(c).length?'disabled':''} onclick="genClip('${esc(c.id)}')">${
+        ['queued','rendering'].includes(c.status)?'Generating…':c.video?'Generate this clip again':'Generate this clip'}</button></div>`:''}
+      ${c.prompt?`<details data-k="pr_${esc(c.id)}"><summary>Video prompt (Seedance)</summary><textarea class="input mono" id="pr_${i}" rows="12">${esc(c.prompt)}</textarea>
+        <div class="btn-row"><button class="btn-ghost" ${m.running?'disabled':''} onclick="savePrompt(${i})">Save prompt</button><span class="muted">A saved change marks a generated clip outdated. It is rendered again only when you click Generate.</span></div></details>`:''}</div>`).join('') : '',
+    assemble: F ? `<video class="video-player" style="max-width:820px;margin-top:4px" controls src="${P(F.video)}?v=${esc(m.stages.assemble.ended||'')}"></video>
+      <div class="btn-row"><a class="btn-ghost" style="display:inline-flex;align-items:center;text-decoration:none" href="${P(F.video)}" download>Download final.mp4</a>
+      <a class="btn-ghost" style="display:inline-flex;align-items:center;text-decoration:none" href="${P(F.subtitles)}" download>${esc(F.subtitles)}</a><span class="muted">${F.seconds}s</span></div>` : '',
+  };
+  const settingsOpen = document.querySelector('details[data-k="settings"]')?.open;
+  const renaming = document.activeElement?.id === 'rename_input';
+  if (renaming) return;     // don't wipe the name being typed on a background refresh
+  $('#view').innerHTML = `<div class="title-row" id="title_row"><h1 class="tool-heading">${esc(m.title)}</h1>
+      <button class="icon-btn" title="Rename project" aria-label="Rename project" onclick="startRename()">${ICON_EDIT}</button></div>
+    <p class="app-subtitle">${esc(m.source.type)} → ${esc(m.target.language)} · ${esc(m.target.region)} ${m.running?' · '+badge('running'):''}</p>
+    <div class="card"><div class="card-label"><span class="title">Models & output</span>
+      <span class="progress">${esc(label(s.llm_model||CATALOG.defaults.llm_model))} · ${esc(label(s.image_model||CATALOG.defaults.image_model))} · ${esc(label(s.video_model))} ${esc(s.resolution)}</span></div>
+      <details data-k="settings" ${settingsOpen?'open':''}><summary>Change models</summary>${modelFields(s, 's_')}
+        <div class="btn-row"><button class="btn-ghost" ${m.running?'disabled':''} onclick="saveSettings()">Save</button>
+        <span class="muted">A new video model or clip length regroups the clips the next time you write prompts, as long as no clip has been rendered.</span></div></details></div>`
+    + d.stages.map(st => stageCard(d, st, bodies[st.key])).join('');
+  window._data = d;
+}
+
+function startRename() {
+  const m = window._data.meta;
+  $('#title_row').innerHTML = `<input class="input rename-input" id="rename_input" maxlength="120" aria-label="Project name"
+      value="${esc(m.title)}" onkeydown="if(event.key==='Enter')saveRename();if(event.key==='Escape'){lastSig='';refresh();}">
+    <button class="btn-primary" style="flex:none;height:34px" onclick="saveRename()">Save</button>
+    <button class="btn-ghost" onclick="lastSig='';refresh()">Cancel</button>`;
+  const el = $('#rename_input'); el.focus(); el.select();
+}
+async function saveRename() {
+  const title = $('#rename_input').value.trim();
+  if (!title) return alert("The project name can't be empty.");
+  try { await post(`/api/projects/${current}/settings`, {title}); $('#rename_input').blur(); lastSig=''; await refresh(); loadList(); }
+  catch (e) { alert(e.message); }
+}
+async function saveSettings() {
+  try { await post(`/api/projects/${current}/settings`, {settings: readModelFields('s_')}); lastSig=''; refresh(); }
+  catch (e) { alert(e.message); }
+}
+async function saveFile(name, el) {
+  try { await putJson(name, $('#'+el).value); lastSig=''; refresh(); } catch (e) { alert(e.message); }
+}
+async function savePrompt(i) {
+  const C = structuredClone(window._data.files['04_shots.json']);
+  C.clips[i].prompt = $('#pr_'+i).value;
+  try { await putJson('04_shots.json', C); lastSig=''; refresh(); } catch (e) { alert(e.message); }
+}
+async function saveSheetPrompt(kind, id) {
+  const S = structuredClone(window._data.files['03_sheets.json']);
+  S[kind][id].prompt = $(`#sp_${id}`).value;
+  try { await putJson('03_sheets.json', S); lastSig=''; refresh(); } catch (e) { alert(e.message); }
+}
+const tc = x => { x = Math.round(+x||0); return `${Math.floor(x/60)}:${String(x%60).padStart(2,'0')}`; };
+function missingRefs(c) {
+  const S = window._data?.files?.['03_sheets.json'] || window._pending_S || {};
+  return (c.references||[]).filter(r => !((S[r.kind==='character'?'characters':'locations']||{})[r.id]||{}).image).map(r => r.id);
+}
+const needsRender = c => !c.video || c.status === 'outdated';
+function genSummary(clips) {
+  const s = window._data.meta.settings, secs = clips.reduce((n,c)=>n+c.duration,0);
+  return `${clips.length} clip${clips.length===1?'':'s'} · ${secs}s with ${label(s.video_model)} at ${s.resolution} ${s.ratio}`;
+}
+async function generateVideo() {
+  const todo = window._data.files['04_shots.json'].clips.filter(needsRender);
+  if (todo.length && !confirm('Generate video: ' + genSummary(todo) + '?')) return;
+  run({start:'shots'});          // renders missing / outdated clips only; assembling is its own click
+}
+async function genClip(id) {
+  const c = window._data.files['04_shots.json'].clips.find(x => x.id === id);
+  const again = !!c.video;
+  if (!confirm(`Generate ${id}${again?' again':''}: ${genSummary([c])}?${again?' The current version is replaced.':''}`)) return;
+  run({start:'shots', only:[id]});
+}
+function sheetGroup(title, what, items, done, m, kind) {
+  if (!(items||[]).length) return '';
+  const busy = m.running;
+  return `<div class="section-heading" style="margin-top:14px">${title}</div><div class="results-grid" style="margin-top:6px">${items.map(it => {
+    const x = (done||{})[it.id] || {}, gen = x.status === 'generating' && busy;
+    const st = gen ? 'running' : ['error','outdated'].includes(x.status) ? x.status : '';
+    return `<div class="result-card">
+      ${x.image ? `<a href="${P_(x.image)}" target="_blank"><img loading="lazy" src="${P_(x.image)}?v=${esc(m.stages.sheets.ended||'')}"></a>`
+               : `<div class="empty" style="color:var(--text-secondary)">${gen ? 'Generating…' : x.prompt ? 'Not generated yet' : 'Write prompts first'}</div>`}
+      <div class="meta"><div><b>${esc(it.id)}</b> ${esc(it.name)} ${st ? badge(st) : ''}</div>
+        ${x.status==='error' ? `<div class="error-box" style="margin-top:6px">${esc(x.error)}</div>` : ''}
+        ${x.status==='outdated' ? `<div class="muted" style="margin-top:6px">The prompt changed after this image was made.</div>` : ''}
+        <div class="btn-row" style="margin-top:8px"><button class="btn-ghost" style="width:100%" ${busy||!x.prompt?'disabled':''} onclick="genSheet('${esc(it.id)}', ${!!x.image})">${
+          gen ? 'Generating…' : x.image ? 'Generate again' : 'Generate ' + what}</button></div>
+        ${x.prompt ? `<details data-k="sp_${esc(it.id)}"><summary>Image prompt (Seedream)</summary>
+          <textarea class="input mono" id="sp_${esc(it.id)}" rows="10">${esc(x.prompt)}</textarea>
+          <div class="btn-row"><button class="btn-ghost" ${busy?'disabled':''} onclick="saveSheetPrompt('${kind}','${esc(it.id)}')">Save prompt</button></div></details>` : ''}
+      </div></div>`;
+  }).join('')}</div>`;
+}
+const P_ = p => `/p/${current}/${p}`;
+async function genSheet(id, again) {
+  if (again && !confirm(`Generate ${id} again? The current image is replaced.`)) return;
+  run({start:'sheets', only:[id]});
+}
+
+api('/api/models').then(c => { CATALOG = c; return loadList(); }).then(showNew);
+</script>
+</body>
+</html>
